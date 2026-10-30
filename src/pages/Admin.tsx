@@ -145,6 +145,18 @@ const Admin = () => {
     }
   }, []);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isFormOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFormOpen]);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput.trim() === ADMIN_PASSWORD) {
@@ -617,15 +629,20 @@ const Admin = () => {
       {/* ==================== 3. PRODUCT PUBLISH / EDIT MODAL ==================== */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsFormOpen(false);
+            }}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden my-8"
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              className="w-full max-w-2xl max-h-[90vh] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto"
             >
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+              {/* Modal Header (Pinned at top) */}
+              <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between shrink-0 bg-zinc-900 z-10">
                 <div>
                   <h3 className="text-base font-semibold text-white">
                     {editingId ? "Edit Product Details" : "Publish New Store Product"}
@@ -635,15 +652,17 @@ const Admin = () => {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Modal Form */}
-              <form onSubmit={handleSaveProduct} className="p-6 space-y-5">
+              {/* Modal Form with Scrollable Content Body & Sticky Footer */}
+              <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="p-6 space-y-5 overflow-y-auto flex-1">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-300">Product Title / Model *</Label>
@@ -930,7 +949,10 @@ const Admin = () => {
                   />
                 </div>
 
-                <div className="pt-4 border-t border-zinc-800 flex items-center justify-between">
+                </div>
+
+                {/* Modal Footer (Pinned at bottom) */}
+                <div className="p-4 px-6 border-t border-zinc-800 flex items-center justify-between shrink-0 bg-zinc-900/95 backdrop-blur-sm z-10">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"

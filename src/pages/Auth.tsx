@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Tent, ArrowLeft } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+import reelLogo from "@/assets/reel-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,19 +116,18 @@ const Auth = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm"
       >
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Tent className="h-5 w-5 text-primary" />
-            <span className="text-sm font-normal tracking-wide text-background">
-              Wild Haven
-            </span>
-          </div>
-          <h1 className="text-2xl font-light text-background mb-2 tracking-tight">
-            {isLogin ? "Admin Login" : "Create Account"}
+        <div className="text-center mb-8">
+          <img
+            src={reelLogo}
+            alt="REEL Tech Hub Logo"
+            className="h-14 w-auto mx-auto mb-3 object-contain"
+          />
+          <h1 className="text-xl font-semibold text-background mb-1 tracking-wider uppercase">
+            REEL TECH HUB
           </h1>
-          <p className="text-xs text-background/60 font-light">
+          <p className="text-xs text-background/60">
             {isLogin
-              ? "Sign in to manage your properties"
+              ? "Sign in to access publishing console"
               : "Register for admin access"}
           </p>
         </div>
@@ -142,7 +142,7 @@ const Auth = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@wildhaven.com"
+              placeholder="admin@reelholding.com.ng"
               className="bg-background/10 border-background/20 text-background placeholder:text-background/30 focus-visible:ring-primary"
               required
             />
@@ -172,13 +172,34 @@ const Auth = () => {
           </Button>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center space-y-3">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-xs text-background/50 hover:text-background/80 font-light transition-colors"
+            className="text-xs text-background/50 hover:text-background/80 font-light transition-colors block mx-auto"
           >
             {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
           </button>
+
+          <div className="pt-4 border-t border-background/20 space-y-2">
+            <button
+              type="button"
+              onClick={() => navigate("/admin")}
+              className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Administrator Key Login (/admin)
+            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="text-xs text-background/50 hover:text-background/80 transition-colors inline-flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Back to REEL Tech Hub
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col items-center gap-4">
