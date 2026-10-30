@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Cpu } from "lucide-react";
-import heroShowroom from "@/assets/hero-showroom.png";
-import heroTechStore from "@/assets/hero-tech-store.png";
-import heroLaptop from "@/assets/hero-laptop-showcase.png";
-import heroGaming from "@/assets/hero-gaming-setup.png";
+import heroShowroom from "@/assets/hero-showroom.webp";
+import heroTechStore from "@/assets/hero-tech-store.webp";
+import heroLaptop from "@/assets/hero-laptop-showcase.webp";
+import heroGaming from "@/assets/hero-gaming-setup.webp";
 
 const slides = [
   {
@@ -58,6 +58,12 @@ const Hero = () => {
   };
 
   useEffect(() => {
+    // Preload remaining slides in background so transitions are instantaneous
+    slides.forEach((s) => {
+      const img = new Image();
+      img.src = s.image;
+    });
+
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -90,6 +96,9 @@ const Hero = () => {
             alt={activeSlide.line2}
             className="w-full h-full object-cover"
             style={{ objectPosition: activeSlide.objectPosition }}
+            decoding="async"
+            loading={currentSlide === 0 ? "eager" : "lazy"}
+            fetchPriority={currentSlide === 0 ? "high" : "auto"}
           />
           {/* Subtle gradient overlay to make typography pop */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/35" />
