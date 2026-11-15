@@ -96,17 +96,15 @@ const Experience = () => {
 
                 <div className="pt-4 border-t border-border/40 flex items-center justify-between">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                    Royalty Executive Empire
+                    Royalty Executive Empire Limited
                   </span>
-                  <button
-                    onClick={() =>
-                      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-                    }
+                  <a
+                    href="https://reelholding.com.ng/contact.html"
                     className="text-xs font-medium text-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                   >
                     Consult With Us
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             );

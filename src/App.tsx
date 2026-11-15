@@ -9,8 +9,6 @@ import ScrollToTop from "./components/ScrollToTop";
 
 const Contact = lazy(() => import("./pages/Contact"));
 const Locations = lazy(() => import("./pages/Locations"));
-const Admin = lazy(() => import("./pages/Admin"));
-const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -34,8 +32,6 @@ const App = () => (
             <Route path="/shop" element={<Locations />} />
             <Route path="/locations" element={<Locations />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<Admin />} />
             {/* CATCH-ALL */}
             <Route path="*" element={<NotFound />} />
           </Routes>

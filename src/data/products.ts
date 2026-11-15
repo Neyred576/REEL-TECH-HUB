@@ -1,7 +1,7 @@
 export interface Product {
   id: string;
   name: string;
-  category: "Laptops" | "Workstations" | "Servers & Network" | "Monitors & Smart Office" | "Accessories";
+  category: "Laptops" | "Workstations" | "Servers & Network" | "Monitors & Smart Office" | "Accessories" | "Mobile Phones";
   price: string;
   originalPrice?: string;
   specs: string;
@@ -15,73 +15,10 @@ export interface Product {
   createdAt: string;
 }
 
-export const DEFAULT_PRODUCTS: Product[] = [
-  {
-    id: "prod-dell-latitude-5420",
-    name: "Dell Latitude 5420 Enterprise Laptop",
-    category: "Laptops",
-    price: "₦480,000",
-    originalPrice: "₦540,000",
-    specs: "Intel Core i7 11th Gen • 16GB RAM • 512GB NVMe SSD • 14\" FHD Anti-Glare",
-    description: "Enterprise fleet-grade laptop engineered for durability, all-day battery life, Wi-Fi 6, and Dell SafeID security hardware.",
-    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800&auto=format&fit=crop&q=80",
-    aspectRatio: "16:9",
-    imageFit: "cover",
-    imagePosition: "center",
-    badge: "In Stock",
-    status: "published",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "prod-hp-elitebook-840-g8",
-    name: "HP EliteBook 840 G8 Executive Laptop",
-    category: "Laptops",
-    price: "₦560,000",
-    originalPrice: "₦620,000",
-    specs: "Intel Core i7 11th Gen • 32GB RAM • 512GB SSD • Bang & Olufsen Audio",
-    description: "Premium ultralight aluminum corporate laptop designed for executives and managers demanding seamless multi-tasking.",
-    image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80",
-    aspectRatio: "16:9",
-    imageFit: "cover",
-    imagePosition: "center",
-    badge: "Best Seller",
-    status: "published",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "prod-lenovo-thinkpad-t14",
-    name: "Lenovo ThinkPad T14 Gen 2",
-    category: "Laptops",
-    price: "₦520,000",
-    specs: "AMD Ryzen 7 PRO / Core i7 • 16GB RAM • 512GB SSD • Legendary Keyboard",
-    description: "MIL-SPEC tested corporate workhorse built for software developers, financial analysts, and corporate travel.",
-    image: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=800&auto=format&fit=crop&q=80",
-    aspectRatio: "16:9",
-    imageFit: "cover",
-    imagePosition: "center",
-    badge: "Enterprise Fleet",
-    status: "published",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "prod-dell-precision-3650",
-    name: "Dell Precision 3650 Tower Workstation",
-    category: "Workstations",
-    price: "₦980,000",
-    originalPrice: "₦1,150,000",
-    specs: "Intel Core i9 11th Gen • 64GB RAM • 1TB NVMe SSD + 2TB HDD • NVIDIA RTX Graphics",
-    description: "ISV-certified desktop powerhouse built for heavy architectural CAD, 3D modeling, deep learning, and continuous 24/7 compute.",
-    image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop&q=80",
-    aspectRatio: "16:9",
-    imageFit: "cover",
-    imagePosition: "center",
-    badge: "High Performance",
-    status: "published",
-    createdAt: new Date().toISOString(),
-  },
-];
+// Products list cleared - ready for user inventory
+export const DEFAULT_PRODUCTS: Product[] = [];
 
-const STORAGE_KEY = "reel_tech_hub_products";
+const STORAGE_KEY = "reel_tech_hub_catalog";
 
 /**
  * Automatically compress uploaded user photos via HTML5 Canvas
@@ -124,6 +61,10 @@ export const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promis
 export const getStoredProducts = (): Product[] => {
   if (typeof window === "undefined") return DEFAULT_PRODUCTS;
   try {
+    // Clear legacy demo keys if present in browser storage
+    localStorage.removeItem("reel_tech_hub_products");
+    localStorage.removeItem("reel_products");
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));

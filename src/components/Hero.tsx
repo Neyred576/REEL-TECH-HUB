@@ -9,7 +9,7 @@ import heroGaming from "@/assets/hero-gaming-setup.webp";
 const slides = [
   {
     image: heroShowroom,
-    subtitle: "A Royalty Executive Empire Division",
+    subtitle: "A Royalty Executive Empire Limited Division",
     line1: "Closing Africa's",
     line2: "Digital Execution Gap",
     desc: "Delivering enterprise digital transformation, executive smart office solutions, and commercial-grade computing.",

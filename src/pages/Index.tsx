@@ -2,8 +2,8 @@ import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Locations from "@/components/Locations";
 import Experience from "@/components/Experience";
-import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const Index = () => {
   return (
@@ -12,8 +12,8 @@ const Index = () => {
       <Hero />
       <Locations />
       <Experience />
-      <ContactSection />
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };
