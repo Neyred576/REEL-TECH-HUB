@@ -155,6 +155,17 @@ const Navigation = ({ variant = "default" }: NavigationProps) => {
               )
             )}
 
+            {/* News & Media Button */}
+            <a
+              href="https://reelholding.com.ng/blog.html"
+              className={`rounded-full smooth-hover text-[11px] uppercase tracking-wider font-medium backdrop-blur-md border border-[#D4AF37]/50 shadow-[0_4px_30px_rgba(212,175,55,0.15)] px-5 py-2 inline-flex items-center justify-center transition-all ${isDark || !isScrolled
+                ? "bg-[#D4AF37]/15 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black border-[#D4AF37]"
+                : "bg-foreground text-background hover:bg-[#D4AF37] hover:text-black border-transparent"
+                }`}
+            >
+              News & Media
+            </a>
+
             {/* Contact Us Action Button at Corner */}
             <Button
               variant="outline"
@@ -221,9 +232,16 @@ const Navigation = ({ variant = "default" }: NavigationProps) => {
                   </button>
                 )
               )}
+              <a
+                href="https://reelholding.com.ng/blog.html"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full mt-4 rounded-full text-[11px] uppercase tracking-wider font-medium bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37] py-3 text-center block"
+              >
+                News & Media
+              </a>
               <Button
                 variant="outline"
-                className="w-full mt-5 rounded-full text-[11px] uppercase tracking-wider font-medium bg-white text-black hover:bg-white/90 border-transparent py-3"
+                className="w-full mt-2 rounded-full text-[11px] uppercase tracking-wider font-medium bg-white text-black hover:bg-white/90 border-transparent py-3"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   window.location.href = "https://reelholding.com.ng/contact.html";
