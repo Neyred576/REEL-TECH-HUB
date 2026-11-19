@@ -3,24 +3,9 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { MessageSquare, Clock, Sparkles, CheckCircle2, RefreshCw, Eye } from "lucide-react";
-import bannerImage from "@/assets/shop-hero-banner.png";
-import { fetchTechProducts, TechProduct } from "@/services/techProductsService";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-
-const formatPrice = (price?: string) => {
-  if (!price) return "";
-  const cleaned = price.trim();
-  if (cleaned.startsWith("₦") || cleaned.startsWith("$") || cleaned.startsWith("£")) {
-    return cleaned;
-  }
-  return `₦${cleaned}`;
-};
+import bannerImage from "@/assets/shop-hero-banner.webp";
+import { fetchTechProducts, TechProduct, resolveImageFitCss } from "@/services/techProductsService";
+import ProductDetailModal, { formatPrice } from "@/components/ProductDetailModal";
 
 const Locations = () => {
   const { scrollY } = useScroll();
@@ -164,23 +149,36 @@ const Locations = () => {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: idx * 0.05 }}
-                    className="group rounded-2xl border border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg overflow-hidden flex flex-col"
+                    onClick={() => setSelectedProduct(p)}
+                    className="group rounded-2xl border border-border bg-card hover:border-primary/60 transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col cursor-pointer"
                   >
                     {/* Image Area */}
-                    <div className="relative w-full h-56 bg-black/40 overflow-hidden flex items-center justify-center">
+                    <div className="relative w-full h-56 overflow-hidden flex items-center justify-center">
                       {p.image ? (
-                        <img
-                          src={p.image}
-                          alt={p.name}
-                          loading="lazy"
-                          className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${
-                            p.imageFit === "contain"
-                              ? "object-contain p-4"
-                              : "object-cover"
-                          }`}
-                        />
+                        <>
+                          {/* Blurred image backdrop — blends with the picture */}
+                          <img
+                            src={p.image}
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover scale-125 blur-xl opacity-60 dark:opacity-40"
+                          />
+                          <div className="absolute inset-0 bg-background/20 backdrop-blur-md" />
+                          {/* Main product image */}
+                          <img
+                            src={p.image}
+                            alt={p.name}
+                            loading="lazy"
+                            className={`relative z-10 w-full h-full transition-transform duration-500 group-hover:scale-105 ${
+                              resolveImageFitCss(p.imageFit) === "object-contain"
+                                ? "object-contain p-3"
+                                : "object-cover"
+                            }`}
+                          />
+                        </>
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground bg-card/60 w-full h-full">
                           <Sparkles className="w-8 h-8 opacity-40 mb-1" />
                           <span className="text-xs">REEL Tech Hub</span>
                         </div>
@@ -239,30 +237,18 @@ const Locations = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setSelectedProduct(p)}
-                            title="View Specs & Details"
-                            className="p-2 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProduct(p);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-foreground/10 hover:bg-foreground hover:text-background text-foreground transition-all duration-200 border border-border/80 shadow-sm group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
                           >
                             <Eye className="w-3.5 h-3.5" />
+                            <span>View</span>
                           </button>
-
-                          {!isSold ? (
-                            <a
-                              href={`https://wa.me/2348067029444?text=${waMessage}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3.5 py-1.5 rounded-full text-xs font-medium hover:bg-[#20ba59] transition-colors shadow-sm"
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span>Inquire</span>
-                            </a>
-                          ) : (
-                            <span className="text-xs font-semibold text-red-400">
-                              SOLD
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -334,79 +320,11 @@ const Locations = () => {
       </main>
 
       {/* Product Details Modal */}
-      <Dialog
-        open={!!selectedProduct}
-        onOpenChange={(open) => !open && setSelectedProduct(null)}
-      >
-        {selectedProduct && (
-          <DialogContent className="max-w-2xl bg-card border-border">
-            <DialogHeader>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary/20 text-primary uppercase">
-                  {selectedProduct.category}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 uppercase">
-                  {selectedProduct.status}
-                </span>
-              </div>
-              <DialogTitle className="text-xl font-medium text-foreground">
-                {selectedProduct.name}
-              </DialogTitle>
-              <DialogDescription className="text-sm font-semibold text-foreground pt-1">
-                Price: {formatPrice(selectedProduct.price)}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-2">
-              {selectedProduct.image && (
-                <div className="w-full h-64 bg-black/40 rounded-xl overflow-hidden flex items-center justify-center border border-border">
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-              )}
-
-              {selectedProduct.specs && (
-                <div className="bg-secondary/40 p-4 rounded-xl border border-border space-y-1">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider block">
-                    Specifications
-                  </span>
-                  <p className="text-xs text-foreground font-mono whitespace-pre-line leading-relaxed">
-                    {selectedProduct.specs}
-                  </p>
-                </div>
-              )}
-
-              {selectedProduct.description && (
-                <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider block">
-                    Description
-                  </span>
-                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {selectedProduct.description}
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-4 flex items-center justify-end gap-3">
-                <a
-                  href={`https://wa.me/2348067029444?text=${encodeURIComponent(
-                    `Hello REEL Tech Hub, I want to order/inquire about: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded-full text-xs font-semibold hover:bg-[#20ba59] transition-colors shadow-sm"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Order via WhatsApp
-                </a>
-              </div>
-            </div>
-          </DialogContent>
-        )}
-      </Dialog>
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
 
       <Footer />
     </div>

@@ -9,9 +9,31 @@ export interface TechProduct {
   description?: string;
   image: string;
   images?: string[];
-  imageFit?: string;
+  imageFit?: string;      // raw value from admin (e.g. "4-3", "4-3-crop", "contain", "cover")
+  imageFitCss?: string;   // resolved CSS value: "object-contain" | "object-cover"
   timestamp?: string;
 }
+
+/**
+ * Map admin imageFit values to Tailwind CSS object-fit classes.
+ *
+ * Admin saves:
+ *   "16-9"      → fit/no-crop → object-contain
+ *   "16-9-crop" → fill/crop   → object-cover
+ *   "4-3"       → fit/no-crop → object-contain
+ *   "4-3-crop"  → fill/crop   → object-cover
+ *   "1-1"       → fit/no-crop → object-contain
+ *   "1-1-crop"  → fill/crop   → object-cover
+ *   "contain"   → object-contain
+ *   "cover"     → object-cover
+ *   anything else → object-contain (safe default)
+ */
+export const resolveImageFitCss = (imageFit?: string): string => {
+  if (!imageFit) return "object-contain";
+  const v = imageFit.toLowerCase().trim();
+  if (v === "cover" || v.endsWith("-crop")) return "object-cover";
+  return "object-contain";
+};
 
 const FIRESTORE_URL =
   "https://firestore.googleapis.com/v1/projects/royal-executive-empire-ree/databases/(default)/documents/tech_products";
@@ -61,6 +83,7 @@ export const fetchTechProducts = async (): Promise<TechProduct[]> => {
         image: primaryImage,
         images: imagesList,
         imageFit: parseFirestoreValue(fields.imageFit) || "cover",
+        imageFitCss: resolveImageFitCss(parseFirestoreValue(fields.imageFit)),
         timestamp: parseFirestoreValue(fields.timestamp) || "",
       };
     });

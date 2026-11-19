@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, MessageSquare, FileText, MapPin, Phone, Building } from "lucide-react";
-import bannerImage from "@/assets/shop-hero-banner.png";
+import bannerImage from "@/assets/shop-hero-banner.webp";
 
 const Contact = () => {
   const { toast } = useToast();

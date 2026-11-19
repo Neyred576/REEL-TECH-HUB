@@ -1,226 +1,284 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import {
-  X,
   MessageSquare,
+  Phone,
   ShieldCheck,
   CheckCircle2,
   Truck,
   Cpu,
-  Phone,
+  Sparkles,
   Tag,
-  ArrowRight,
+  X,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Product } from "@/data/products";
+import { TechProduct, resolveImageFitCss } from "@/services/techProductsService";
+
+export const formatPrice = (price?: string | number): string => {
+  if (price === undefined || price === null || price === "") return "";
+  const str = String(price).trim();
+  if (str.startsWith("₦") || str.startsWith("$") || str.startsWith("£")) {
+    return str;
+  }
+  const num = Number(str.replace(/,/g, ""));
+  if (!isNaN(num) && num > 0) {
+    return `₦${num.toLocaleString()}`;
+  }
+  return `₦${str}`;
+};
 
 interface ProductDetailModalProps {
-  product: Product | null;
+  product: TechProduct | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const getRatioClass = (ratio?: string) => {
-  if (ratio === "1:1") return "aspect-square";
-  if (ratio === "4:3") return "aspect-[4/3]";
-  if (ratio === "3:2") return "aspect-[3/2]";
-  return "aspect-[16/9]";
-};
+export const ProductDetailModal = ({
+  product,
+  isOpen,
+  onClose,
+}: ProductDetailModalProps) => {
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
-const getFitClass = (fit?: string) => {
-  return fit === "contain" ? "object-contain p-4 bg-secondary/40" : "object-cover";
-};
+  useEffect(() => {
+    if (product) {
+      setSelectedImage(product.image || (product.images && product.images[0]) || "");
+    }
+  }, [product]);
 
-const getPosClass = (pos?: string) => {
-  if (pos === "top") return "object-top";
-  if (pos === "bottom") return "object-bottom";
-  return "object-center";
-};
+  // Close on Escape key
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose]
+  );
 
-const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProps) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, handleKeyDown]);
+
   if (!isOpen || !product) return null;
 
-  const handleOrderNow = () => {
-    const message = `*NEW PRODUCT ORDER INQUIRY — REEL TECH HUB*
-━━━━━━━━━━━━━━━━━━━━
-📦 *Product:* ${product.name}
-💰 *Price:* ${product.price}
-🏷️ *Category:* ${product.category}
-⚙️ *Specs:* ${product.specs}
-━━━━━━━━━━━━━━━━━━━━
-Hello REEL Tech Hub, I want to order this product. Please share current payment details and delivery schedule.`;
+  const isSold = (product.status || "").toUpperCase() === "SOLD";
+  const isPreorder = (product.status || "").toUpperCase().includes("PRE");
 
-    const url = `https://wa.me/2348067029444?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
-  };
+  // Collect all unique images
+  const allImages = Array.from(
+    new Set([product.image, ...(product.images || [])].filter(Boolean))
+  );
 
-  // Parse specs into individual chips if separated by • or comma
-  const specItems = product.specs
-    ? product.specs.split(/•|,|;/).map((s) => s.trim()).filter(Boolean)
-    : [];
+  const formattedPrice = formatPrice(product.price);
+  const formattedOriginalPrice = formatPrice(product.originalPrice);
+
+  // Resolve the correct CSS class from admin's imageFit value
+  const fitCss = resolveImageFitCss(product.imageFit);
+  const imgClass = fitCss === "object-contain" ? "object-contain p-4" : "object-cover";
+
+  const waMessage = encodeURIComponent(
+    isSold
+      ? `Hello REEL Tech Hub, I saw ${product.name} (${formattedPrice || "N/A"}) is marked as SOLD. I would like to inquire about restock or backorder availability.`
+      : `Hello REEL Tech Hub, I want to inquire about: ${product.name} (Price: ${formattedPrice || "N/A"}). Please provide availability and delivery details.`
+  );
+
+  const waUrl = `https://wa.me/2348067029444?text=${waMessage}`;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative w-full max-w-4xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden my-8"
+    /* Overlay — z-[200] to sit above the navbar's z-[100] */
+    <div
+      className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto"
+      style={{ padding: "5rem 1rem 2rem" }} /* top padding clears the fixed navbar */
+    >
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Modal panel */}
+      <div
+        className="relative z-10 w-full max-w-2xl sm:max-w-3xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 p-1.5 rounded-full bg-background/70 hover:bg-background text-foreground border border-border transition-colors shadow-sm"
+          aria-label="Close"
         >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-20 p-2 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border transition-colors shadow-sm"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <X className="w-4 h-4" />
+        </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 max-h-[85vh] overflow-y-auto">
-            {/* Left Column: Image & Media */}
-            <div className="md:col-span-6 bg-secondary/30 p-6 sm:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-border">
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md bg-foreground/10 text-foreground font-semibold">
-                    {product.category}
-                  </span>
-                  {product.badge && (
-                    <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-semibold">
-                      {product.badge}
-                    </span>
-                  )}
-                  <span className="text-[10px] font-mono text-muted-foreground ml-auto">
-                    ID: {product.id.slice(0, 10)}
-                  </span>
-                </div>
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-border/70 text-left pr-14">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {product.category && (
+              <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                {product.category}
+              </span>
+            )}
+            <span
+              className={`text-[11px] font-bold tracking-wider px-2.5 py-0.5 rounded-full uppercase border ${
+                isSold
+                  ? "bg-red-500/15 text-red-400 border-red-500/30"
+                  : isPreorder
+                  ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                  : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+              }`}
+            >
+              {product.status || "IN STOCK"}
+            </span>
+          </div>
 
-                {/* Main Product Image Container */}
-                <div
-                  className={`w-full ${getRatioClass(
-                    product.aspectRatio
-                  )} rounded-xl overflow-hidden bg-background border border-border shadow-inner relative`}
-                >
+          <h2 className="text-xl sm:text-2xl font-light text-foreground tracking-tight">
+            {product.name}
+          </h2>
+
+          <div className="flex items-baseline gap-2 pt-1">
+            <span className="text-xl sm:text-2xl text-foreground font-semibold">
+              {formattedPrice || "Price on Request"}
+            </span>
+            {formattedOriginalPrice && (
+              <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                {formattedOriginalPrice}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6 overflow-y-auto">
+          {/* Product Image */}
+          <div className="space-y-3">
+            <div className="relative w-full h-72 sm:h-96 rounded-2xl overflow-hidden flex items-center justify-center border border-border">
+              {selectedImage ? (
+                <>
+                  {/* Blurred image backdrop — blends with the picture */}
                   <img
-                    src={product.image}
-                    alt={product.name}
-                    className={`w-full h-full transition-transform duration-500 hover:scale-105 ${getFitClass(
-                      product.imageFit
-                    )} ${getPosClass(product.imagePosition)}`}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800&auto=format&fit=crop&q=80";
-                    }}
+                    src={selectedImage}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-60 dark:opacity-40"
                   />
-                  <span className="absolute bottom-2 right-2 bg-black/75 text-[9px] px-2 py-0.5 rounded text-white font-mono backdrop-blur-sm">
-                    {product.aspectRatio || "16:9"}
-                  </span>
+                  <div className="absolute inset-0 bg-background/20 backdrop-blur-md" />
+                  {/* Main product image */}
+                  <img
+                    src={selectedImage}
+                    alt={product.name}
+                    className={`relative z-10 w-full h-full ${imgClass}`}
+                  />
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-muted-foreground bg-muted/20 w-full h-full">
+                  <Sparkles className="w-10 h-10 opacity-30 mb-2" />
+                  <span className="text-xs">REEL Tech Hub Hardware</span>
                 </div>
-              </div>
-
-              {/* Verified Hardware Badges */}
-              <div className="mt-6 pt-6 border-t border-border/60 space-y-2.5">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-light">
-                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                  <span>30-Day Comprehensive REEL Corporate Warranty</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-light">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Certified 100% Hardware & Battery Health Tested</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-light">
-                  <Truck className="w-4 h-4 text-primary shrink-0" />
-                  <span>Same-Day Dispatch & Nationwide Delivery in Nigeria</span>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Right Column: Information, Specs & Order Button */}
-            <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold block mb-1">
-                  REEL Tech Hub Store
-                </span>
-                <h2 className="text-xl sm:text-2xl font-light text-foreground tracking-tight mb-3">
-                  {product.name}
-                </h2>
-
-                {/* Price Display */}
-                <div className="flex items-baseline gap-3 mb-6 p-4 rounded-xl bg-secondary/40 border border-border">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-                      {product.price}
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {product.originalPrice}
-                      </span>
-                    )}
-                  </div>
-                  <span className="ml-auto text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                    Verified Stock
-                  </span>
-                </div>
-
-                {/* Specifications Grid */}
-                <div className="mb-6">
-                  <h4 className="text-xs uppercase tracking-wider font-semibold text-foreground mb-2.5 flex items-center gap-1.5">
-                    <Cpu className="w-3.5 h-3.5 text-primary" />
-                    Key Hardware Specifications:
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {specItems.map((spec, i) => (
-                      <span
-                        key={i}
-                        className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground font-light border border-border/60"
-                      >
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Detailed Description */}
-                {product.description && (
-                  <div className="mb-6">
-                    <h4 className="text-xs uppercase tracking-wider font-semibold text-foreground mb-1.5">
-                      Description & Overview:
-                    </h4>
-                    <p className="text-xs text-muted-foreground font-light leading-relaxed">
-                      {product.description}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Order Action Buttons */}
-              <div className="pt-6 border-t border-border space-y-3">
-                <Button
-                  onClick={handleOrderNow}
-                  className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white py-3.5 rounded-full text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Order Now via WhatsApp
-                </Button>
-
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
-                  <span>Questions before ordering?</span>
-                  <a
-                    href="tel:+2348067029444"
-                    className="text-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium"
+            {/* Thumbnails if multi-photo */}
+            {allImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {allImages.map((img, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedImage(img)}
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
+                      selectedImage === img
+                        ? "border-primary ring-2 ring-primary/30"
+                        : "border-border/70 hover:border-foreground/50 opacity-70 hover:opacity-100"
+                    }`}
                   >
-                    <Phone className="w-3 h-3" />
-                    Call +234 806 702 9444
-                  </a>
-                </div>
+                    <img
+                      src={img}
+                      alt={`${product.name} preview ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
+
+          {/* Specifications */}
+          {product.specs && (
+            <div className="bg-secondary/40 p-4 rounded-xl border border-border space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Cpu className="w-4 h-4 text-primary" />
+                <span>Hardware Specifications</span>
+              </div>
+              <p className="text-xs sm:text-sm text-foreground font-mono whitespace-pre-line leading-relaxed">
+                {product.specs}
+              </p>
+            </div>
+          )}
+
+          {/* Description */}
+          {product.description && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Tag className="w-3.5 h-3.5 text-primary" />
+                <span>Description & Overview</span>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                {product.description}
+              </p>
+            </div>
+          )}
+
+          {/* Trust badges */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30 border border-border/60 text-[11px] text-muted-foreground">
+              <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+              <span>REEL Corporate Hardware Warranty</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30 border border-border/60 text-[11px] text-muted-foreground">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>100% Tested & Verified Hardware</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30 border border-border/60 text-[11px] text-muted-foreground">
+              <Truck className="w-4 h-4 text-primary shrink-0" />
+              <span>Express Delivery Available</span>
             </div>
           </div>
-        </motion.div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 sm:p-5 border-t border-border/70 bg-card/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+            <span>Direct Desk:</span>
+            <a
+              href="tel:+2348067029444"
+              className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3" />
+              +234 806 702 9444
+            </a>
+          </div>
+
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
+          >
+            <MessageSquare className="w-4 h-4 shrink-0" />
+            <span>{isSold ? "Inquire for Restock" : "Inquire via WhatsApp"}</span>
+          </a>
+        </div>
       </div>
-    </AnimatePresence>
+    </div>
   );
 };
 
 export default ProductDetailModal;
-

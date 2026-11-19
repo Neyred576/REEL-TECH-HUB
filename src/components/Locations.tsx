@@ -2,17 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { MessageSquare, Clock, Sparkles, ArrowRight, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import shopBanner from "@/assets/shop-hero-banner.png";
-import { fetchTechProducts, TechProduct } from "@/services/techProductsService";
-
-const formatPrice = (price?: string) => {
-  if (!price) return "";
-  const cleaned = price.trim();
-  if (cleaned.startsWith("₦") || cleaned.startsWith("$") || cleaned.startsWith("£")) {
-    return cleaned;
-  }
-  return `₦${cleaned}`;
-};
+import shopBanner from "@/assets/shop-hero-banner.webp";
+import { fetchTechProducts, TechProduct, resolveImageFitCss } from "@/services/techProductsService";
+import ProductDetailModal, { formatPrice } from "@/components/ProductDetailModal";
 
 const Locations = () => {
   const ref = useRef(null);
@@ -20,6 +12,7 @@ const Locations = () => {
 
   const [products, setProducts] = useState<TechProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<TechProduct | null>(null);
 
   useEffect(() => {
     fetchTechProducts().then((data) => {
@@ -66,18 +59,35 @@ const Locations = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5, delay: idx * 0.08 }}
-                    className="group rounded-2xl border border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg overflow-hidden flex flex-col"
+                    onClick={() => setSelectedProduct(p)}
+                    className="group rounded-2xl border border-border bg-card hover:border-primary/60 transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col cursor-pointer"
                   >
-                    <div className="relative w-full h-52 bg-black/40 overflow-hidden flex items-center justify-center">
+                    <div className="relative w-full h-52 overflow-hidden flex items-center justify-center">
                       {p.image ? (
-                        <img
-                          src={p.image}
-                          alt={p.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
+                        <>
+                          {/* Blurred image backdrop — blends with the picture */}
+                          <img
+                            src={p.image}
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover scale-125 blur-xl opacity-60 dark:opacity-40"
+                          />
+                          <div className="absolute inset-0 bg-background/30 backdrop-blur-md" />
+                          {/* Main product image */}
+                          <img
+                            src={p.image}
+                            alt={p.name}
+                            loading="lazy"
+                            className={`relative z-10 w-full h-full transition-transform duration-500 group-hover:scale-105 ${
+                              resolveImageFitCss(p.imageFit) === "object-contain"
+                                ? "object-contain p-3"
+                                : "object-cover"
+                            }`}
+                          />
+                        </>
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground bg-muted/20 w-full h-full">
                           <Sparkles className="w-8 h-8 opacity-40 mb-1" />
                           <span className="text-xs">REEL Tech Hub</span>
                         </div>
@@ -117,21 +127,19 @@ const Locations = () => {
                           {formatPrice(p.price)}
                         </div>
 
-                        {!isSold ? (
-                          <a
-                            href={`https://wa.me/2348067029444?text=${waMessage}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 bg-[#25D366] text-white px-3.5 py-1.5 rounded-full text-xs font-medium hover:bg-[#20ba59] transition-colors shadow-sm"
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProduct(p);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-foreground/10 hover:bg-foreground hover:text-background text-foreground transition-all duration-200 border border-border/80 shadow-sm group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary"
                           >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            <span>Inquire</span>
-                          </a>
-                        ) : (
-                          <span className="text-xs font-semibold text-red-400">
-                            SOLD
-                          </span>
-                        )}
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -218,6 +226,13 @@ const Locations = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Product Details Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </section>
   );
 };
