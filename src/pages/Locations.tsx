@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { MessageSquare, Clock, Sparkles, CheckCircle2, RefreshCw, Eye } from "lucide-react";
+import { MessageSquare, Clock, Sparkles, CheckCircle2, RefreshCw, Eye, ShoppingCart } from "lucide-react";
 import bannerImage from "@/assets/shop-hero-banner.webp";
 import { fetchTechProducts, TechProduct, resolveImageFitCss } from "@/services/techProductsService";
 import ProductDetailModal, { formatPrice } from "@/components/ProductDetailModal";
+import { useCart } from "@/context/CartContext";
 
 const Locations = () => {
+  const { addToCart } = useCart();
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
 
@@ -15,6 +17,7 @@ const Locations = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState<TechProduct | null>(null);
+  const [addedId, setAddedId] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -138,6 +141,7 @@ const Locations = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
               {filteredProducts.map((p, idx) => {
                 const isSold = p.status.toUpperCase() === "SOLD";
+                const isComingSoon = p.status.toUpperCase() === "COMING SOON";
                 const isPreorder = p.status.toUpperCase().includes("PRE");
                 const waMessage = encodeURIComponent(
                   `Hello REEL Tech Hub, I want to inquire about purchasing: ${p.name} (Price: ${formatPrice(p.price) || "N/A"})`
@@ -191,6 +195,8 @@ const Locations = () => {
                             ? "bg-red-500/20 text-red-400 border-red-500/40"
                             : isPreorder
                             ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                            : isComingSoon
+                            ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
                             : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                         }`}
                       >
@@ -249,6 +255,29 @@ const Locations = () => {
                             <Eye className="w-3.5 h-3.5" />
                             <span>View</span>
                           </button>
+                          {!isSold && (
+                            addedId === p.id ? (
+                              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500 text-black transition-all shadow-sm">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Added! ✓</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addToCart(p, 1);
+                                  setAddedId(p.id);
+                                  setTimeout(() => setAddedId(null), 1500);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-primary hover:bg-primary/90 text-black transition-all shadow-sm cursor-pointer"
+                                title="Add to Cart"
+                              >
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                                <span>Cart</span>
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
                     </div>

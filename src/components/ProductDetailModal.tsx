@@ -9,8 +9,10 @@ import {
   Sparkles,
   Tag,
   X,
+  ShoppingCart,
 } from "lucide-react";
 import { TechProduct, resolveImageFitCss } from "@/services/techProductsService";
+import { useCart } from "@/context/CartContext";
 
 export const formatPrice = (price?: string | number): string => {
   if (price === undefined || price === null || price === "") return "";
@@ -36,11 +38,14 @@ export const ProductDetailModal = ({
   isOpen,
   onClose,
 }: ProductDetailModalProps) => {
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [isAdded, setIsAdded] = useState(false);
 
   useEffect(() => {
     if (product) {
       setSelectedImage(product.image || (product.images && product.images[0]) || "");
+      setIsAdded(false);
     }
   }, [product]);
 
@@ -266,15 +271,56 @@ export const ProductDetailModal = ({
             </a>
           </div>
 
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
-          >
-            <MessageSquare className="w-4 h-4 shrink-0" />
-            <span>{isSold ? "Inquire for Restock" : "Inquire via WhatsApp"}</span>
-          </a>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            {isSold ? (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white px-6 py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
+              >
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                <span>Inquire for Restock</span>
+              </a>
+            ) : (
+              <>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-emerald-400 transition-colors mr-1"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Inquire via WhatsApp</span>
+                </a>
+                {isAdded ? (
+                  <span className="inline-flex items-center justify-center gap-2 bg-emerald-500 text-black px-7 py-2.5 rounded-full text-xs font-bold transition-all shadow-md w-full sm:w-auto">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-black" />
+                    <span>ADDED TO CART! ✓</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (product) {
+                        addToCart(product, 1);
+                        setIsAdded(true);
+                        setTimeout(() => {
+                          setIsAdded(false);
+                          onClose();
+                        }, 800);
+                      }
+                    }}
+                    className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-black px-7 py-2.5 rounded-full text-xs font-bold transition-all shadow-md hover:shadow-primary/30 w-full sm:w-auto cursor-pointer"
+                  >
+                    <ShoppingCart className="w-4 h-4 shrink-0" />
+                    <span>ADD TO CART</span>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
         </div>
       </div>
     </div>

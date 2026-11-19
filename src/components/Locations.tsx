@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { MessageSquare, Clock, Sparkles, ArrowRight, Eye } from "lucide-react";
+import { MessageSquare, Clock, Sparkles, ArrowRight, Eye, ShoppingCart, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import shopBanner from "@/assets/shop-hero-banner.webp";
 import { fetchTechProducts, TechProduct, resolveImageFitCss } from "@/services/techProductsService";
 import ProductDetailModal, { formatPrice } from "@/components/ProductDetailModal";
+import { useCart } from "@/context/CartContext";
 
 const Locations = () => {
+  const { addToCart } = useCart();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
   const [products, setProducts] = useState<TechProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<TechProduct | null>(null);
+  const [addedId, setAddedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTechProducts().then((data) => {
@@ -49,6 +52,7 @@ const Locations = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {products.slice(0, 6).map((p, idx) => {
                 const isSold = p.status.toUpperCase() === "SOLD";
+                const isComingSoon = p.status.toUpperCase() === "COMING SOON";
                 const waMessage = encodeURIComponent(
                   `Hello REEL Tech Hub, I want to inquire about: ${p.name} (${formatPrice(p.price) || "N/A"})`
                 );
@@ -97,6 +101,8 @@ const Locations = () => {
                         className={`absolute top-3 left-3 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full uppercase backdrop-blur-md border ${
                           isSold
                             ? "bg-red-500/20 text-red-400 border-red-500/40"
+                            : isComingSoon
+                            ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
                             : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                         }`}
                       >
@@ -139,6 +145,29 @@ const Locations = () => {
                             <Eye className="w-3.5 h-3.5" />
                             <span>View</span>
                           </button>
+                          {!isSold && (
+                            addedId === p.id ? (
+                              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500 text-black transition-all shadow-sm">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Added! ✓</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addToCart(p, 1);
+                                  setAddedId(p.id);
+                                  setTimeout(() => setAddedId(null), 1500);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-primary hover:bg-primary/90 text-black transition-all shadow-sm cursor-pointer"
+                                title="Add to Cart"
+                              >
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                                <span>Cart</span>
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
                     </div>

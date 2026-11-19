@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ExternalLink } from "lucide-react";
+import { Menu, X, ExternalLink, ShoppingCart } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import reelLogo from "@/assets/reel-logo.png";
+import { useCart } from "@/context/CartContext";
 
 interface NavigationProps {
   variant?: "default" | "dark";
@@ -13,6 +14,7 @@ const Navigation = ({ variant = "default" }: NavigationProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isDark = variant === "dark";
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -178,19 +180,59 @@ const Navigation = ({ variant = "default" }: NavigationProps) => {
             >
               Contact Us
             </Button>
+
+            {/* Cart Button */}
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              className={`relative p-2.5 rounded-full border transition-all duration-200 cursor-pointer flex items-center justify-center ${
+                isDark || !isScrolled
+                  ? "bg-white/10 text-white border-white/20 hover:border-primary hover:text-primary"
+                  : "bg-foreground/5 text-foreground border-border hover:border-primary hover:text-primary"
+              }`}
+              aria-label={`Shopping Cart (${cartCount} items)`}
+              title="View Cart"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-black text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
-          <button
-            className={`md:hidden p-2 ${isMobileMenuOpen || isDark || !isScrolled
-              ? "text-white"
-              : "text-foreground"
+          {/* Mobile Cart & Menu Buttons */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              className={`relative p-2 rounded-full border transition-all duration-200 cursor-pointer ${
+                isMobileMenuOpen || isDark || !isScrolled
+                  ? "bg-white/10 text-white border-white/20"
+                  : "bg-foreground/5 text-foreground border-border"
               }`}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+              aria-label={`Cart (${cartCount})`}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-black text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              className={`p-2 ${isMobileMenuOpen || isDark || !isScrolled
+                ? "text-white"
+                : "text-foreground"
+                }`}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation Dropdown */}
