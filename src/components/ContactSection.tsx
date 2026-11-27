@@ -126,25 +126,55 @@ _Sent via REEL Tech Hub Online Portal_`;
 
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-foreground" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                      Branch Office &mdash; Abu Dhabi, UAE
+                    </h4>
+                    <p className="text-xs text-muted-foreground font-light mt-1 leading-relaxed">
+                      Tower D, 24th Floor, Flat No 2405, Electra Street, Abu Dhabi, United Arab Emirates
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4 text-foreground" />
                   </div>
                   <div>
                     <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                      Direct Telephones
+                      CALL US (NIG)
                     </h4>
                     <p className="text-xs text-muted-foreground font-light mt-1">
                       <a href="tel:+2348067029444" className="hover:text-foreground transition-colors">
                         +234 806 702 9444
                       </a>{" "}
                       &bull;{" "}
-                      <a href="tel:+2349118024521" className="hover:text-foreground transition-colors">
-                        +234 911 802 4521
+                      <a href="tel:+2348111166543" className="hover:text-foreground transition-colors">
+                        +234 811 116 6543
                       </a>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4 text-foreground" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                      CALL US (UAE)
+                    </h4>
+                    <p className="text-xs text-muted-foreground font-light mt-1">
+                      <a href="tel:+971561347581" className="hover:text-foreground transition-colors">
+                        +971 561 347 581
+                      </a>
+                    </p>
+                  </div>
+                </div>
+
+<div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
                     <Mail className="w-4 h-4 text-foreground" />
                   </div>
@@ -153,8 +183,8 @@ _Sent via REEL Tech Hub Online Portal_`;
                       Official Inquiries
                     </h4>
                     <p className="text-xs text-muted-foreground font-light mt-1">
-                      <a href="mailto:admin@reelholding.com.ng" className="hover:text-foreground transition-colors">
-                        admin@reelholding.com.ng
+                      <a href="mailto:Royaltyexecutiveempire@gmail.com" className="hover:text-foreground transition-colors">
+                        Royaltyexecutiveempire@gmail.com
                       </a>
                     </p>
                   </div>
